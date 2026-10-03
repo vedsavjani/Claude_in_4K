@@ -20,6 +20,8 @@ public:
     DCAnalysis(ISimulator& s) : sim(s) {}
     void run(const Circuit& ckt) override;
     void printResults() const override;
+
+    const vector<complex<double>>& getResult() const { return result; }
 };
 
 // AC sweep: one solve per frequency from startFreq to endFreq
@@ -32,4 +34,7 @@ public:
     ACAnalysis(ISimulator& s, double start, double end, double st);
     void run(const Circuit& ckt) override;
     void printResults() const override;
+
+    const vector<double>& getFrequencies() const { return freqs; }
+    const vector<vector<complex<double>>>& getResults() const { return results; }
 };

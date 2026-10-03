@@ -1,0 +1,5 @@
+type,name,node_a,node_b,value
+V,V1,1,0,5
+R,R1,1,2,100
+L,L1,2,3,0.01
+C,C1,3,0,0.000001

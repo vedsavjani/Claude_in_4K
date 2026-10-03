@@ -17,7 +17,7 @@ public:
 
     void listComponents() const {
         for (const auto& c : components) {
-            cout << c->getName() << "  " << c->getType() << "  value=" << c->getValue()
+            cout <<c->getId()<<" "<<c->getName() << "  " << c->getType() << "  value=" << c->getValue()
                  << "  nodes=" << c->getNodeA() << "," << c->getNodeB() << endl;
         }
     }

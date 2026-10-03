@@ -7,11 +7,12 @@ const double PI = 3.14159265359;
 
 class Component {
 protected:
+    string component_id;
     string name;
     int nodeA;
     int nodeB;
 public:
-    Component(string n, int a, int b) : name(n), nodeA(a), nodeB(b) {}
+    Component(string id,string n, int a, int b) :component_id(id), name(n), nodeA(a), nodeB(b) {}
 
     // virtual destructor
     virtual ~Component() = default;
@@ -23,6 +24,9 @@ public:
                                         // useful for printing results and debugging
                                     
     // these three getters dont use virtual becoz the their behavious is same for all components
+    string getId() const {
+        return component_id;
+    }
     string getName() const {
         return name;
     }               
@@ -40,7 +44,7 @@ class Resistor : public Component {
 private:
     double resistance;
 public:
-    Resistor(string n, int a, int b, double r) : Component(n, a, b) , resistance(r) {}
+    Resistor(string id,string n, int a, int b, double r) : Component(id,n, a, b) , resistance(r) {}
 
     // overriding some of the getter functions in Component class
     complex<double> getImpedance(double frequency) const override {
@@ -60,7 +64,7 @@ class Inductor : public Component {
 private:
     double inductance;
 public:
-    Inductor(string n, int a, int b, double l) : Component(n, a, b) , inductance(l) {}
+    Inductor(string id,string n, int a, int b, double l) : Component(id,n, a, b) , inductance(l) {}
 
     // overriding some of the getter functions in Component class
     complex<double> getImpedance(double frequency) const override {
@@ -80,7 +84,7 @@ class Capacitor : public Component {
 private:
     double capacitance;
 public:
-    Capacitor(string n, int a, int b, double f) : Component(n, a, b) , capacitance(f) {}
+    Capacitor(string id,string n, int a, int b, double f) : Component(id,n, a, b) , capacitance(f) {}
 
     // overriding some of the getter functions in Component class
     complex<double> getImpedance(double frequency) const override {
@@ -101,7 +105,7 @@ private:
     double voltage; // this is an ideal, independent voltage source
     double freq; 
 public:
-    VoltageSource(string n, int a, int b, double v, double fr) : Component(n, a, b) , voltage(v), freq(fr) {}
+    VoltageSource(string id,string n, int a, int b, double v, double fr) : Component(id,n, a, b) , voltage(v), freq(fr) {}
 
     double getFrequency() const {
         return freq;
@@ -118,5 +122,31 @@ public:
 
     string getType() const override {
         return "V";
+    }
+};
+
+
+class CurrentSoruce : public Component {
+private:
+    double current; // this is an ideal, independent current source
+    double freq; 
+public:
+    CurrentSoruce(string id,string n, int a, int b, double v, double fr) : Component(id,n, a, b) , current(v), freq(fr) {}
+
+    double getFrequency() const {
+        return freq;
+    }
+
+    // overriding some of the getter functions in Component class
+    complex<double> getImpedance(double frequency) const override {
+        return complex<double>(0.0, 0.0);    // impedence is zero for an ideal current source
+    }
+
+    double getValue() const override {
+        return current;
+    }
+
+    string getType() const override {
+        return "A";
     }
 };
