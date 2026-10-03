@@ -21,4 +21,14 @@ int main() {
     ACAnalysis ac(sim, 500, 3000, 250);   // resonance is ~1592 Hz
     ac.run(ckt);
     ac.printResults();
+
+    // save the results as CSV files (open them in Excel, or load with pandas)
+    try {
+        dc.exportCSV("dc_results.csv");
+        ac.exportCSV("ac_sweep.csv");
+        cout << "\nExported dc_results.csv and ac_sweep.csv\n";
+    } catch (const exception& e) {
+        cerr << "Export failed: " << e.what() << "\n";
+        return 1;
+    }
 }

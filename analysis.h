@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <complex>
+#include <string>
 #include "circuit.h"
 #include "simulator.h"
 
@@ -10,6 +11,7 @@ public:
     virtual ~IAnalysis() = default;
     virtual void run(const Circuit& ckt) = 0;     // compute and store results
     virtual void printResults() const = 0;        // display them
+    virtual void exportCSV(const std::string& filename) const = 0;   // save results as a .csv file
 };
 
 // DC operating point: one solve at frequency 0
@@ -20,6 +22,7 @@ public:
     DCAnalysis(ISimulator& s) : sim(s) {}
     void run(const Circuit& ckt) override;
     void printResults() const override;
+    void exportCSV(const std::string& filename) const override;
 };
 
 // AC sweep: one solve per frequency from startFreq to endFreq
@@ -32,4 +35,5 @@ public:
     ACAnalysis(ISimulator& s, double start, double end, double st);
     void run(const Circuit& ckt) override;
     void printResults() const override;
+    void exportCSV(const std::string& filename) const override;
 };
