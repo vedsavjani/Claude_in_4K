@@ -21,7 +21,7 @@ public:
 // Format (header is required, '#' starts a comment line):
 //     type,name,node_a,node_b,value
 //     V,V1,1,0,5
-//     R,R1,1,2,4.7k          <- values may use SPICE suffixes: f p n u m k meg g t
+//     R,R1,1,2,4700          <- values are plain numbers (1e-6 is fine, 4.7k is not)
 // Types: R, L, C, V.  Node 0 is ground.  Node numbers must have no gaps.
 Circuit readCircuitCsv(std::istream& input, const std::string& sourceName = "<stream>");
 Circuit readCircuitCsvFile(const std::string& path);
