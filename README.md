@@ -33,7 +33,7 @@ resistor, a 10 mH inductor, and a 1 μF capacitor. The simulator runs DC
 operating-point analysis and an AC sweep from 500 Hz to 3000 Hz in 250 Hz
 steps.
 
-![Built-in series RLC example](default-circuit-example.jpg)
+![Built-in series RLC example](default-circuit-example.jpeg)
 
 You can also provide a circuit CSV file directly:
 
