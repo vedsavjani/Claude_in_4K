@@ -95,16 +95,15 @@ int parseNode(const string& s) {
 double parseValueField(const string& s) {
     double number = 0.0;
     try {
+        // plain numbers only: digits, sign, decimal point and e/E (no hex, inf, nan or unit suffixes)
+        if (s.empty() || s.find_first_not_of("0123456789+-.eE") != string::npos)
+            throw invalid_argument("");
         size_t pos = 0;
         number = stod(s, &pos);
-        
-        // Throw an error if any characters remain after the number (suffixes removed)
-        string remainder = s.substr(pos);
-        if (remainder.find_first_not_of(" \t\r\n") != string::npos) {
+        if (pos != s.size())                       // something left over, e.g. "5e" or "1.2.3"
             throw invalid_argument("");
-        }
     } catch (...) {
-        throw invalid_argument("value '" + s + "' is not a valid number (suffixes are not supported)");
+        throw invalid_argument("value '" + s + "' is not a valid number (use plain numbers such as 4700 or 4.7e3; suffixes like k or u are not supported)");
     }
     
     if (!isfinite(number))
@@ -209,9 +208,28 @@ void writeHeader(ostream& os) {
 
 void writeRow(ostream& os, double frequency, size_t node, complex<double> v) {
     v = {v.real() + 0.0, v.imag() + 0.0};      // "+ 0.0" turns a negative zero into 0
-    // PI is replaced with its explicit value here since we aren't including components.h
     os << frequency << ',' << node << ',' << v.real() << ',' << v.imag() << ','
-       << abs(v) << ',' << arg(v) * 180.0 / 3.14159265359 << '\n';
+       << abs(v) << ',' << arg(v) * 180.0 / PI << '\n';
+}
+
+// throws before anything is written if run() was never called
+void requireResults(const DCAnalysis& analysis) {
+    if (analysis.getResult().empty())
+        throw logic_error("run the DC analysis before exporting its results");
+}
+void requireResults(const ACAnalysis& analysis) {
+    if (analysis.getFrequencies().empty() || analysis.getResults().size() != analysis.getFrequencies().size())
+        throw logic_error("run the AC analysis before exporting its results");
+}
+
+template <typename Analysis>
+void writeToFile(const string& path, const Analysis& analysis) {
+    requireResults(analysis);              // first! opening the file would erase an existing one
+    ofstream out(path);
+    if (!out) throw runtime_error("cannot open output CSV file: " + path);
+    writeResultsCsv(out, analysis);
+    out.flush();
+    if (!out) throw runtime_error("failed while writing output CSV file: " + path);
 }
 
 } // namespace
@@ -278,9 +296,8 @@ Circuit readCircuitCsvFile(const string& path) {
 // Public API: writing
 // ============================================================================
 void writeResultsCsv(ostream& output, const DCAnalysis& analysis) {
+    requireResults(analysis);
     const auto& voltages = analysis.getResult();
-    if (voltages.empty())
-        throw logic_error("run the DC analysis before exporting its results");
 
     FormatGuard guard(output);
     writeHeader(output);
@@ -290,10 +307,9 @@ void writeResultsCsv(ostream& output, const DCAnalysis& analysis) {
 }
 
 void writeResultsCsv(ostream& output, const ACAnalysis& analysis) {
+    requireResults(analysis);
     const auto& frequencies = analysis.getFrequencies();
     const auto& results = analysis.getResults();
-    if (frequencies.empty() || results.size() != frequencies.size())
-        throw logic_error("run the AC analysis before exporting its results");
 
     FormatGuard guard(output);
     writeHeader(output);
@@ -303,18 +319,5 @@ void writeResultsCsv(ostream& output, const ACAnalysis& analysis) {
     if (!output) throw runtime_error("failed while writing AC results CSV");
 }
 
-void writeResultsCsvFile(const string& path, const DCAnalysis& analysis) {
-    ofstream out(path);
-    if (!out) throw runtime_error("cannot open output CSV file: " + path);
-    writeResultsCsv(out, analysis);
-    out.flush();
-    if (!out) throw runtime_error("failed while writing output CSV file: " + path);
-}
-
-void writeResultsCsvFile(const string& path, const ACAnalysis& analysis) {
-    ofstream out(path);
-    if (!out) throw runtime_error("cannot open output CSV file: " + path);
-    writeResultsCsv(out, analysis);
-    out.flush();
-    if (!out) throw runtime_error("failed while writing output CSV file: " + path);
-}
+void writeResultsCsvFile(const string& path, const DCAnalysis& analysis) { writeToFile(path, analysis); }
+void writeResultsCsvFile(const string& path, const ACAnalysis& analysis) { writeToFile(path, analysis); }
