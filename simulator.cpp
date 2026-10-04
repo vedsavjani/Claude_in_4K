@@ -5,9 +5,9 @@
 
 using namespace std;
 
-// ============================================================================
+
 // BaseSimulator Implementation (Template Method)
-// ============================================================================
+
 
 // Default empty hooks: derived classes may selectively override them
 void BaseSimulator::preSolveHook(const Circuit&, double) {}
@@ -140,9 +140,7 @@ void DiagnosticSimulator::postSolveHook(const Circuit&, double,
          << lastDurationMs << " ms\n";
 }
 
-// ============================================================================
 // DCSimulator Implementation
-// ============================================================================
 
 void DCSimulator::preSolveHook(const Circuit&, double frequency) {
     if (frequency != 0.0) {
@@ -155,9 +153,7 @@ vector<complex<double>> DCSimulator::solve(const Circuit& circuit) {
     return BaseSimulator::solve(circuit, 0.0);
 }
 
-// ============================================================================
 // CurrentTrackingSimulator Implementation
-// ============================================================================
 
 void CurrentTrackingSimulator::postSolveHook(const Circuit& circuit, double frequency,
                                             const vector<complex<double>>& nodeVoltages,
