@@ -91,7 +91,7 @@ protected:
 
 public:
     DCSimulator() = default;
-    
+    using BaseSimulator::solve;
     // Convenience overload specifically for DC operating point analysis
     std::vector<std::complex<double>> solve(const Circuit& circuit);
 };

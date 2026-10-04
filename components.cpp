@@ -11,7 +11,7 @@ int Component::getNodeB() const { return nodeB; }
 Resistor::Resistor(string n, int a, int b, double r) : Component(n, a, b), resistance(r) {}
 
 complex<double> Resistor::getImpedance(double frequency) const {
-    return {resistance, 0.0};
+    return {resistance, frequency-frequency};  //to avoid the warning of not using the frequency variable.
 }
 double Resistor::getValue() const { return resistance; }
 string Resistor::getType() const { return "R"; }
@@ -41,7 +41,9 @@ VoltageSource::VoltageSource(string n, int a, int b, double v, double fr)
 double VoltageSource::getFrequency() const { return freq; }
 
 complex<double> VoltageSource::getImpedance(double frequency) const {
-    return {0.0, 0.0};    // impedance is zero for an ideal voltage source
+    
+    return {0.0,frequency-frequency};   //to avoid the warning of not using the frequency variable.
 }
+
 double VoltageSource::getValue() const { return voltage; }
 string VoltageSource::getType() const { return "V"; }

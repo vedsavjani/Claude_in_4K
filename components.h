@@ -61,6 +61,7 @@ public:
     string getType() const override;
 };
 
+
 class VoltageSource : public Component {
     double voltage; // this is an ideal, independent voltage source
     double freq;
