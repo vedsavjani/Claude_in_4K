@@ -22,11 +22,18 @@ and both test programs: `circuit_simulator`, `tests`, and `csv_tests`.
 
 ## Run
 
-Run the simulator with its built-in series RLC example:
+Run the simulator without a CSV argument to use its built-in example circuit:
 
 ```sh
 mingw32-make run
 ```
+
+The built-in example is a series RLC circuit: a 5 V voltage source, a 100 Ω
+resistor, a 10 mH inductor, and a 1 μF capacitor. The simulator runs DC
+operating-point analysis and an AC sweep from 500 Hz to 3000 Hz in 250 Hz
+steps.
+
+![Built-in series RLC example](images/default-circuit-example.jpg)
 
 You can also provide a circuit CSV file directly:
 
