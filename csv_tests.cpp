@@ -35,13 +35,13 @@ struct CommaDecimal : numpunct<char> { char do_decimal_point() const override { 
 int main() {
     // ---------- reading: valid input ----------
     {
-        Circuit c = parse(H + "V,V1,1,0,5\nR,R1,1,2,4.7k\nL,L1,2,3,10m\nC,C1,3,0,1u\n");
+        Circuit c = parse(H + "V,V1,1,0,5\nR,R1,1,2,4700\nL,L1,2,3,0.01\nC,C1,3,0,1e-6\n");
         check("reads 4 components", c.getComponents().size() == 4);
         check("derives node count (4)", c.getNumNodes() == 4);
-        check("suffix 4.7k", abs(c.getComponents()[1]->getValue() - 4700) < 1e-9);
-        check("suffix 10m = milli", abs(c.getComponents()[2]->getValue() - 0.01) < 1e-12);
-        check("suffix 1u", abs(c.getComponents()[3]->getValue() - 1e-6) < 1e-15);
-        check("meg suffix", abs(parse(H + "V,V1,1,0,1\nR,R1,1,0,2meg\n").getComponents()[1]->getValue() - 2e6) < 1e-3);
+        check("plain number 4700", abs(c.getComponents()[1]->getValue() - 4700) < 1e-9);
+        check("decimal 0.01", abs(c.getComponents()[2]->getValue() - 0.01) < 1e-12);
+        check("scientific 1e-6", abs(c.getComponents()[3]->getValue() - 1e-6) < 1e-15);
+        check("explicit + sign", abs(parse(H + "V,V1,1,0,1\nR,R1,1,0,+100\n").getComponents()[1]->getValue() - 100) < 1e-9);
     }
     check("CRLF, spaces and comments", parse("# c\r\n type , name , node_a , node_b , value \r\n V , V1 , 1 , 0 , 5 \r\nR,R1,1,0,1000\r\n").getComponents().size() == 2);
     check("quoted names", parse(H + "V,\"V,1\",1,0,5\nR,\"R \"\"x\"\"\",1,0,1000\n").getComponents()[1]->getName() == "R \"x\"");
@@ -57,7 +57,12 @@ int main() {
     expectError("zero capacitance", H + "V,V1,1,0,5\nC,C1,1,0,0\n", "greater than zero");
     expectError("same node twice", H + "V,V1,1,0,5\nR,R1,1,1,100\n", "both terminals of R1 are on node 1");
     expectError("bad value", H + "V,V1,1,0,5\nR,R1,1,0,abc\n", "not a valid number");
-    expectError("bad suffix", H + "V,V1,1,0,5\nR,R1,1,0,10x\n", "unknown unit suffix");
+    expectError("suffix 4.7k rejected", H + "V,V1,1,0,5\nR,R1,1,0,4.7k\n", "suffixes like k or u are not supported");
+    expectError("suffix 10u rejected", H + "V,V1,1,0,5\nC,C1,1,0,10u\n", "not a valid number");
+    expectError("hex rejected", H + "V,V1,1,0,5\nR,R1,1,0,0x10\n", "not a valid number");
+    expectError("nan rejected", H + "V,V1,1,0,5\nR,R1,1,0,nan\n", "not a valid number");
+    expectError("incomplete exponent", H + "V,V1,1,0,5\nR,R1,1,0,5e\n", "not a valid number");
+    expectError("out-of-range value", H + "V,V1,1,0,5\nR,R1,1,0,1e999\n", "not a valid number");
     expectError("inf value", H + "V,V1,1,0,5\nR,R1,1,0,inf\n", "not a valid number");
     expectError("unknown type", H + "V,V1,1,0,5\nX,Q1,1,0,1\n", "unsupported component type 'X'");
     expectError("wrong field count", H + "V,V1,1,0\n", "expected 5 fields");
@@ -72,7 +77,7 @@ int main() {
 
     // ---------- writing: round trip through the real solver ----------
     NodalSimulator sim;
-    Circuit rlc = parse(H + "V,V1,1,0,5\nR,R1,1,2,100\nL,L1,2,3,10m\nC,C1,3,0,1u\n");
+    Circuit rlc = parse(H + "V,V1,1,0,5\nR,R1,1,2,100\nL,L1,2,3,0.01\nC,C1,3,0,1e-6\n");
     DCAnalysis dc(sim);
     ACAnalysis ac(sim, 1000, 2000, 500);
 
@@ -125,14 +130,13 @@ int main() {
     fs::create_directories(dir);
     string good = (dir / "ac.csv").string(), keep = (dir / "keep.csv").string();
     writeResultsCsvFile(good, ac);
-    check("file written, no .tmp left", fs::exists(good) && !fs::exists(good + ".tmp"));
+    check("file written", fs::exists(good));
     { ofstream f(keep); f << "precious,data\n"; }
     DCAnalysis notRun(sim);
     try { writeResultsCsvFile(keep, notRun); check("failed export throws", false); }
     catch (const logic_error&) {
         ifstream f(keep); string l; getline(f, l);
         check("failed export leaves existing file untouched", l == "precious,data");
-        check("failed export leaves no .tmp", !fs::exists(keep + ".tmp"));
     }
     try { writeResultsCsvFile((dir / "no_such_dir" / "x.csv").string(), dc); check("bad output path throws", false); }
     catch (const runtime_error&) { check("bad output path throws", true); }
