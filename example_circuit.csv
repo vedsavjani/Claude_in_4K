@@ -1,5 +1,5 @@
 # Series RLC: V1 -> R1 -> L1 -> C1 -> ground
-# type: R, L, C or V.  node 0 is ground.  values may use suffixes: p n u m k meg g
+# type: R L C or V.  node 0 is ground. 
 type,name,node_a,node_b,value
 V,V1,1,0,5
 R,R1,1,2,100
